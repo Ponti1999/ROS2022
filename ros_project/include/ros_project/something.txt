@@ -1,0 +1,2 @@
+Az üres mappákat nem tölti fel / látja a git (be kell állítani majd esetleg)
+ezért most egy random szöveget létrehozok ide.
