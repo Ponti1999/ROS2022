@@ -1,14 +1,11 @@
+from multiprocessing.dummy import Array
+from turtle import distance
 import rospy
 import time
 import math
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 
-#It is the Main part where the publish and subcribtions happen
-# and data collections
-#It needs one parameter -> degree which tell the
-# front view degree of the lidar scan
-#(need to be <= then 28)
 class PlatypousMain:
     def __init__(self):
         rospy.init_node('platypous_controller', anonymous=True)
@@ -19,70 +16,98 @@ class PlatypousMain:
     def cb_scan_cp(self, msg):
         self.scan_cp = msg
 
-    def front(self, degree, x_speed, z_angular):
+    def scan(self, degree, x_speed, z_angular):
         time.sleep(0.4)
         p = self.scan_cp
-
+        
+        #for x in range(len(p.ranges)):
+        #    Distance.Array.append(p.ranges[x])
+        #    if p.ranges[x] == min(p.ranges):
+        #        print("index: " + str(x) + " min value: " + str(min(p.ranges)))
+        
         scan_front = 692-degree
         #a = len(p.ranges)-(degree*2)
         for x in range(degree*2):
             Distance.Front.append(p.ranges[x+scan_front])
         
-        print("Forward: " + str(Distance.f_avg))
-        
-        pc = PlatypousController()
-        pc.go(degree, x_speed, z_angular)
+        scan_front_l = 70-degree
+        #a = len(p.ranges)-(degree*2)
+        for x in range(degree*2):
+            Distance.Front_Left.append(p.ranges[x+scan_front_l])
 
-    def back(self, degree, x_speed, z_angular):
-        time.sleep(0.4)
-        p = self.scan_cp
+        scan_front_r = 616-degree
+        #a = len(p.ranges)-(degree*2)
+        for x in range(degree*2):
+            Distance.Front_Right.append(p.ranges[x+scan_front_r])
 
         scan_back = 355-degree
         #a = len(p.ranges)-(degree*2)
         for x in range(degree*2):
-            Distance.Front.append(p.ranges[x+scan_back])
+            Distance.Back.append(p.ranges[x+scan_back])
         
-        print("Backward: " + str(Distance.b_avg))
-        
-        pc = PlatypousController()
-        pc.go(degree, x_speed, z_angular)
-
-    def left(self, degree, x_speed, z_angular):
-        time.sleep(0.4)
-        p = self.scan_cp
-
-        scan_back = 523-degree
+        scan_left = 174-degree
         #a = len(p.ranges)-(degree*2)
         for x in range(degree*2):
-            Distance.Front.append(p.ranges[x+scan_back])
+            Distance.Left.append(p.ranges[x+scan_left])
         
-        print("Leftward: " + str(Distance.l_avg))
-        print("Degree: " + str(degree) + " speed: " + str(x_speed) + " angular: " + str(z_angular))
-        
-        pc = PlatypousController()
-        pc.rotate(degree, x_speed, z_angular)
-
-    def right(self, degree, x_speed, z_angular):
-        time.sleep(0.4)
-        p = self.scan_cp
-
-        scan_back = 174-degree
+        scan_right = 523-degree
         #a = len(p.ranges)-(degree*2)
         for x in range(degree*2):
-            Distance.Front.append(p.ranges[x+scan_back])
+            Distance.Right.append(p.ranges[x+scan_right])
         
-        print("Rightward: " + str(Distance.r_avg))
-        
-        pc = PlatypousController()
-        pc.rotate(degree, x_speed, z_angular)
+        Distance.f_avg = PlatypousMain.Average(Distance.Front)
+        Distance.f_l_avg = PlatypousMain.Average(Distance.Front_Left)
+        Distance.f_r_avg = PlatypousMain.Average(Distance.Front_Right)
+        Distance.b_avg = PlatypousMain.Average(Distance.Back)
+        Distance.l_avg = PlatypousMain.Average(Distance.Left)
+        Distance.r_avg = PlatypousMain.Average(Distance.Right)
 
-        
+        #print(type(Distance.f_avg))
 
-#Get the LIDAR scan information from Main
-#for further calculations
+        if(type(Distance.f_avg) != float):
+            Distance.f_avg = 100
+        elif(type(Distance.f_l_avg) != float):
+            Distance.f_l_avg = 100
+        elif(type(Distance.f_r_avg) != float):
+            Distance.f_r_avg = 100
+        elif(type(Distance.b_avg) != float):
+            Distance.b_avg = 100
+        elif(type(Distance.l_avg) != float):
+            Distance.l_avg = 100
+        elif(type(Distance.r_avg) != float):
+            Distance.r_avg = 100
+
+        #print("Front: " + str(Distance.Front))
+
+        print("Front avg: " + str(round(Distance.f_avg, 4)))
+        print("Front Left avg: " + str(round(Distance.f_l_avg, 4)))
+        print("Front Right avg: " + str(round(Distance.f_r_avg, 4)))
+        #print("Left: " + str(round(Distance.l_avg, 4)))
+        #print("Right: " + str(round(Distance.r_avg, 4)))
+        #print("Back: " + str(round(Distance.b_avg, 4)))
+        print()
+        
+        Distance.Front.clear()
+        Distance.Front_Left.clear()
+        Distance.Front_Right.clear()
+        Distance.Back.clear()
+        Distance.Left.clear()
+        Distance.Right.clear()
+
+        PlatypousController.go(self, x_speed, z_angular)
+
+    def Average(array):
+        return sum(array) / len(array)
+
 class Distance():
+    Array = []
     Front = []
-    f_avg = 1
+    f_avg = 3
+    Front_Left = []
+    f_l_avg = 3
+    Front_Right = []
+    f_r_avg = 3
+
     Right = []
     r_avg = 3
     Left = []
@@ -91,62 +116,53 @@ class Distance():
     b_avg = 3
 
 
-#Variables: x_speed, z_angular
-class PlatypousController:
-    
-    def go(self, degree, x_speed, z_angular):
+class PlatypousController:    
+    def go(self, x_speed, z_angular):
         self.twist_pub = rospy.Publisher('/cmd_vel/nav', Twist, queue_size=10)
         vel_msg = Twist()
-        Distance.f_avg = Helper.Average(Distance.Front)
-        if (Distance.f_avg < 2.5):
-            print("F: " + str(Distance.f_avg))
-            PlatypousController.calculate(self, degree, x_speed, z_angular)
-        vel_msg.linear.x = x_speed
-        self.twist_pub.publish(vel_msg)
-    
-    def calculate(self, degree, x_speed, z_angular):
-        pm = PlatypousMain()
-        pm.left(degree, x_speed, z_angular)
-        pm.right(degree, x_speed, z_angular)
 
-    def rotate(self, degree, x_speed, z_angular):
-        print("rotate! Degree: " + str(degree) + " speed: " + str(x_speed) + " angular: " + str(z_angular))
-
-        self.twist_pub = rospy.Publisher('/cmd_vel/nav', Twist, queue_size=10)
-        vel_msg = Twist()
-        #Slow down for turning (for safety)
-        slow_down_speed = x_speed / 2
-        vel_msg.linear.x = slow_down_speed
-        self.twist_pub.publish(vel_msg)
-
-        if(Distance.l_avg <= Distance.r_avg):
-
-            vel_msg.angular.z = -z_angular
+        if((Distance.f_avg > 2.5) and (Distance.f_l_avg > 2.5) and (Distance.f_r_avg > 2.5)):
+            vel_msg.linear.x = abs(x_speed)
             self.twist_pub.publish(vel_msg)
-            print("If rotate! Degree: " + str(degree) + " speed: " + str(x_speed) + " angular: " + str(z_angular))
-            PlatypousController.go(degree, x_speed, z_angular)
-        elif(Distance.l_avg < 2.5 and Distance.r_avg < 2.5):
-            PlatypousMain.back(degree, -x_speed, z_angular)
+            print("Elso if")
+
         else:
-            print("Else rotate! Degree: " + str(degree) + " speed: " + str(x_speed) + " angular: " + str(z_angular))
-            vel_msg.angular.z = z_angular
-            self.twist_pub.publish(vel_msg)
-            PlatypousController.go(degree, x_speed, z_angular)
-            
-        PlatypousController.go(degree, x_speed, z_angular)
+            print("Belépett")
+            if((Distance.l_avg >= Distance.r_avg) and Distance.f_avg < 1.2):
+                print("1")
+                vel_msg.linear.x = -abs(x_speed)
+                vel_msg.angular.z = z_angular
+                self.twist_pub.publish(vel_msg)
+            elif((Distance.r_avg < Distance.r_avg) and Distance.f_avg < 1.2):
+                print("2")
+                vel_msg.linear.x = -abs(x_speed)
+                vel_msg.angular.z = -z_angular
+                self.twist_pub.publish(vel_msg)
+            elif(Distance.f_l_avg < 1.5):
+                print("3")
+                x_speed = x_speed/2
+                vel_msg.linear.x = abs(x_speed)
+                vel_msg.angular.z = -z_angular
+                self.twist_pub.publish(vel_msg)
+                #print("Masodik if")
 
-
-class Helper:
-    def Average(array):
-        return sum(array) / len(array)
-
+            elif(Distance.f_r_avg < 1.5):
+                print("4")
+                x_speed = x_speed/2
+                vel_msg.linear.x = abs(x_speed)
+                vel_msg.angular.z = z_angular
+                self.twist_pub.publish(vel_msg)
+                #print("Harmadik if")
 
 if __name__ == '__main__':
     pm = PlatypousMain()
+
+    #pm.scan(17, 0.3, 0.5)
 
     # 1. Front scan view degree
     # 2. Speed
     # 3. Rotation
     while(True):
-        pm.front(17, -0.3, 0.5)
-    
+        pm.scan(17, 0.5, 0.1)
+
+    #rosrun ros_project platypous_controller.py
