@@ -1,5 +1,4 @@
-from multiprocessing.dummy import Array
-from turtle import distance
+#!/usr/bin/env python3
 import rospy
 import time
 import math
@@ -128,17 +127,17 @@ class PlatypousController:
 
         else:
             print("Belépett")
-            if((Distance.l_avg >= Distance.r_avg) and Distance.f_avg < 1.2):
+            if Distance.l_avg >= Distance.r_avg and Distance.f_avg < 1.2:
                 print("1")
                 vel_msg.linear.x = -abs(x_speed)
                 vel_msg.angular.z = z_angular
                 self.twist_pub.publish(vel_msg)
-            elif((Distance.r_avg < Distance.r_avg) and Distance.f_avg < 1.2):
+            elif Distance.l_avg < Distance.r_avg and Distance.f_avg < 1.2:
                 print("2")
                 vel_msg.linear.x = -abs(x_speed)
                 vel_msg.angular.z = -z_angular
                 self.twist_pub.publish(vel_msg)
-            elif(Distance.f_l_avg < 1.5):
+            elif Distance.f_l_avg <= Distance.f_r_avg:
                 print("3")
                 x_speed = x_speed/2
                 vel_msg.linear.x = abs(x_speed)
@@ -146,7 +145,7 @@ class PlatypousController:
                 self.twist_pub.publish(vel_msg)
                 #print("Masodik if")
 
-            elif(Distance.f_r_avg < 1.5):
+            elif Distance.f_r_avg > Distance.f_r_avg:
                 print("4")
                 x_speed = x_speed/2
                 vel_msg.linear.x = abs(x_speed)
@@ -162,7 +161,8 @@ if __name__ == '__main__':
     # 1. Front scan view degree
     # 2. Speed
     # 3. Rotation
-    while(True):
-        pm.scan(17, 0.5, 0.1)
+    while not rospy.is_shutdown():
+        pm.scan(17, 0.5, 0.2)
+
 
     #rosrun ros_project platypous_controller.py
