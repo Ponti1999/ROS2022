@@ -15,77 +15,74 @@ class PlatypousMain:
     def cb_scan_cp(self, msg):
         self.scan_cp = msg
 
-    def scan(self, degree, x_speed, z_angular):
+    def scan(self, front_degree, front_side_degree, side_degree, x_speed, z_angular):
         time.sleep(0.4)
         p = self.scan_cp
-        
-        #for x in range(len(p.ranges)):
-        #    Distance.Array.append(p.ranges[x])
-        #    if p.ranges[x] == min(p.ranges):
-        #        print("index: " + str(x) + " min value: " + str(min(p.ranges)))
-        
-        scan_front = 692-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
-            Distance.Front.append(p.ranges[x+scan_front])
-        
-        scan_front_l = 70-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
-            Distance.Front_Left.append(p.ranges[x+scan_front_l])
 
-        scan_front_r = 616-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
-            Distance.Front_Right.append(p.ranges[x+scan_front_r])
-
-        scan_back = 355-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
-            Distance.Back.append(p.ranges[x+scan_back])
+        scan_front_f = 720 - front_side_degree
+        for x in range(front_side_degree):
+            Distance.Front_Focus.append(round(p.ranges[x+scan_front_f], 4))
         
-        scan_left = 174-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
+        for x in range(front_side_degree):
+            Distance.Front_Focus.append(round(p.ranges[x], 4))
+
+        # print("Front Focus Min: " + str(min(Distance.Front_Focus)))
+        # print("Front Focus: " + str(Distance.Front_Focus))
+        # print()
+                
+        scan_front = 720-front_degree
+        for x in range(front_degree):
+            Distance.Front.append(round(p.ranges[x+scan_front], 4))
+        
+        for x in range(front_degree):
+            Distance.Front.append(round(p.ranges[x], 4))
+
+        # print("Front Min: " + str(round(min(Distance.Front), 4)))
+        # print("Front: " + str(Distance.Front))
+        # print()
+        
+
+        scan_front_l = front_degree
+        for x in range(front_side_degree*2):
+            Distance.Front_Left.append(round(p.ranges[x+scan_front_l], 4))
+
+        # print("Front Left Min: " + str(min(Distance.Front_Left)))
+        # print("Front Left: " + str(Distance.Front_Left))
+        # print()
+
+
+        scan_front_r = scan_front - (front_side_degree *2)
+        for x in range(front_side_degree*2):
+            Distance.Front_Right.append(round(p.ranges[x+scan_front_r], 4))
+
+        # print("Front Right Min: " + str(min(Distance.Front_Right)))
+        # print("Front Right: " + str(Distance.Front_Right))
+
+        
+        scan_left = scan_front_l
+        for x in range(side_degree*2):
             Distance.Left.append(p.ranges[x+scan_left])
         
-        scan_right = 523-degree
-        #a = len(p.ranges)-(degree*2)
-        for x in range(degree*2):
+        scan_right = scan_front_r - (side_degree*2)
+        for x in range(side_degree*2):
             Distance.Right.append(p.ranges[x+scan_right])
+
+        scan_back = 360 - (front_degree * 2)
+        for x in range(front_degree*2):
+            Distance.Back.append(p.ranges[x+scan_back])
         
-        Distance.f_avg = PlatypousMain.Average(Distance.Front)
-        Distance.f_l_avg = PlatypousMain.Average(Distance.Front_Left)
-        Distance.f_r_avg = PlatypousMain.Average(Distance.Front_Right)
-        Distance.b_avg = PlatypousMain.Average(Distance.Back)
-        Distance.l_avg = PlatypousMain.Average(Distance.Left)
-        Distance.r_avg = PlatypousMain.Average(Distance.Right)
+        scan_back_r = scan_back + (front_degree * 2)
+        for x in range(front_side_degree*2):
+            Distance.Back_Right.append(p.ranges[x+scan_back_r])
 
-        #print(type(Distance.f_avg))
+        scan_back_l = scan_back - (front_side_degree * 2)
+        for x in range(front_side_degree*2):
+            Distance.Back_Left.append(p.ranges[x+scan_back_l])
 
-        if(type(Distance.f_avg) != float):
-            Distance.f_avg = 100
-        elif(type(Distance.f_l_avg) != float):
-            Distance.f_l_avg = 100
-        elif(type(Distance.f_r_avg) != float):
-            Distance.f_r_avg = 100
-        elif(type(Distance.b_avg) != float):
-            Distance.b_avg = 100
-        elif(type(Distance.l_avg) != float):
-            Distance.l_avg = 100
-        elif(type(Distance.r_avg) != float):
-            Distance.r_avg = 100
 
-        #print("Front: " + str(Distance.Front))
+        PlatypousController.go(self, x_speed, z_angular)
 
-        print("Front avg: " + str(round(Distance.f_avg, 4)))
-        print("Front Left avg: " + str(round(Distance.f_l_avg, 4)))
-        print("Front Right avg: " + str(round(Distance.f_r_avg, 4)))
-        #print("Left: " + str(round(Distance.l_avg, 4)))
-        #print("Right: " + str(round(Distance.r_avg, 4)))
-        #print("Back: " + str(round(Distance.b_avg, 4)))
-        print()
-        
+    def clear():
         Distance.Front.clear()
         Distance.Front_Left.clear()
         Distance.Front_Right.clear()
@@ -93,76 +90,129 @@ class PlatypousMain:
         Distance.Left.clear()
         Distance.Right.clear()
 
-        PlatypousController.go(self, x_speed, z_angular)
-
-    def Average(array):
-        return sum(array) / len(array)
-
 class Distance():
-    Array = []
+    Front_Focus = []
     Front = []
-    f_avg = 3
     Front_Left = []
-    f_l_avg = 3
-    Front_Right = []
-    f_r_avg = 3
-
-    Right = []
-    r_avg = 3
     Left = []
-    l_avg = 3
+    Back_Right = []
     Back = []
-    b_avg = 3
+    Back_Left = []
+    Right = []
+    Front_Right = []
 
 
-class PlatypousController:    
+class PlatypousController:
     def go(self, x_speed, z_angular):
         self.twist_pub = rospy.Publisher('/cmd_vel/nav', Twist, queue_size=10)
         vel_msg = Twist()
 
-        if((Distance.f_avg > 2.5) and (Distance.f_l_avg > 2.5) and (Distance.f_r_avg > 2.5)):
-            vel_msg.linear.x = abs(x_speed)
-            self.twist_pub.publish(vel_msg)
-            print("Elso if")
+        #pozitív angukar_z esetén balra fordul
 
+        print("Front min: " + str(min(Distance.Front)))
+        print("Front right min: " + str(min(Distance.Front_Right)))
+        print("Front left min: " + str(min(Distance.Front_Left)))
+        print("Back right min: " + str(min(Distance.Back_Right)))
+        print("Back left min: " + str(min(Distance.Back_Left)))
+        print()
+        if min(Distance.Front) < 1.1:
+
+            if (min(Distance.Front_Right) < 1) or (min(Distance.Front_Left) > (min(Distance.Front_Right) + 0.8)):
+                if min(Distance.Front) > 1 and min(Distance.Front_Left) > (min(Distance.Front_Right) + 0.8):
+                    print("Bal")
+                    vel_msg.linear.x = x_speed/2
+                    vel_msg.angular.z = z_angular
+                    self.twist_pub.publish(vel_msg)
+                elif min(Distance.Front) > 0.5:
+                    if min(Distance.Front_Left) > 1:
+                        print("1")
+                        vel_msg.linear.x = x_speed/2
+                        vel_msg.angular.z = z_angular
+                        self.twist_pub.publish(vel_msg)
+                    elif min(Distance.Back_Right) > 1:
+                        print("2")
+                        vel_msg.linear.x = -x_speed
+                        vel_msg.angular.z = -z_angular
+                        self.twist_pub.publish(vel_msg)
+                elif min(Distance.Back) > 0.5 or min(Distance.Back_Left) > 0.5 or min(Distance.Back_Right) > 0.5:
+                    if min(Distance.Back) > 0.5:
+                        print("3")
+                        vel_msg.angular.z = 0
+                        vel_msg.linear.x = -x_speed*0.6
+                        self.twist_pub.publish(vel_msg)
+                    elif min(Distance.Back_Right) > 0.5:
+                        print("4")
+                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.angular.z = -z_angular
+                        self.twist_pub.publish(vel_msg)
+                    elif min(Distance.Back_Left) > 0.5:
+                        print("5")
+                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.angular.z = z_angular
+                        self.twist_pub.publish(vel_msg)
+            elif (min(Distance.Front_Left) < 1) or (min(Distance.Front_Right) > (min(Distance.Front_Left) + 0.8)):
+                if min(Distance.Front) > 1 and min(Distance.Front_Right) > (min(Distance.Front_Left) + 0.8):
+                    print("Bal")
+                    vel_msg.linear.x = x_speed/2
+                    vel_msg.angular.z = z_angular
+                    self.twist_pub.publish(vel_msg)
+                elif min(Distance.Front) > 0.5:
+                    if min(Distance.Front_Right) > 1:
+                        print("3")
+                        vel_msg.linear.x = x_speed/2
+                        vel_msg.angular.z = -z_angular
+                        self.twist_pub.publish(vel_msg)
+                    elif(min(Distance.Back_Left) > 1):
+                        print("7")
+                        vel_msg.linear.x = -x_speed
+                        vel_msg.angular.z = z_angular
+                        self.twist_pub.publish(vel_msg)
+                elif min(Distance.Back) > 0.5 or min(Distance.Back_Left) > 0.5 or min(Distance.Back_Right) > 0.5:
+                    if min(Distance.Back) > 0.5:
+                        print("8")
+                        vel_msg.angular.z = 0
+                        vel_msg.linear.x = -x_speed*0.6
+                        self.twist_pub.publish(vel_msg)
+                    elif min(Distance.Back_Right) > 0.5:
+                        print("9")
+                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.angular.z = -z_angular
+                        self.twist_pub.publish(vel_msg)
+                    elif min(Distance.Back_Left) > 0.5:
+                        print("10")
+                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.angular.z = z_angular
+                        self.twist_pub.publish(vel_msg)
+            #Ide egy hátrafelé fordulásos implementálás
+            
+            else:
+                print("nice")
         else:
-            print("Belépett")
-            if Distance.l_avg >= Distance.r_avg and Distance.f_avg < 1.2:
-                print("1")
-                vel_msg.linear.x = -abs(x_speed)
-                vel_msg.angular.z = z_angular
-                self.twist_pub.publish(vel_msg)
-            elif Distance.l_avg < Distance.r_avg and Distance.f_avg < 1.2:
-                print("2")
-                vel_msg.linear.x = -abs(x_speed)
-                vel_msg.angular.z = -z_angular
-                self.twist_pub.publish(vel_msg)
-            elif Distance.f_l_avg <= Distance.f_r_avg:
-                print("3")
-                x_speed = x_speed/2
-                vel_msg.linear.x = abs(x_speed)
-                vel_msg.angular.z = -z_angular
-                self.twist_pub.publish(vel_msg)
-                #print("Masodik if")
+            vel_msg.linear.x = x_speed
+            self.twist_pub.publish(vel_msg)
 
-            elif Distance.f_r_avg > Distance.f_r_avg:
-                print("4")
-                x_speed = x_speed/2
-                vel_msg.linear.x = abs(x_speed)
-                vel_msg.angular.z = z_angular
-                self.twist_pub.publish(vel_msg)
-                #print("Harmadik if")
+        #vel_msg.linear.x = x_speed/2
+        #vel_msg.angular.z = z_angular
+        #self.twist_pub.publish(vel_msg)
+
+
+        PlatypousMain.clear()
 
 if __name__ == '__main__':
     pm = PlatypousMain()
 
-    #pm.scan(17, 0.3, 0.5)
+    # pm.scan(80, 10, 40, 0.5, 0.4)
 
+    #front_degree, front_side_degree, side_degree, x_speed, z_angular
     # 1. Front scan view degree
     # 2. Speed
     # 3. Rotation
     while not rospy.is_shutdown():
-        pm.scan(17, 0.5, 0.2)
+       pm.scan(75, 15, 40, 0.6, 0.45)
 
 
+    #cd Documents/PlatypOUs-Mobile-Robot-Platform/
+    #./platypous start_sim
+    #source ~/catkin_ws/devel/setup.bash
+    #clear
     #rosrun ros_project platypous_controller.py
