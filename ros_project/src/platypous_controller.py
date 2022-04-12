@@ -19,7 +19,7 @@ class PlatypousMain:
         time.sleep(0.4)
         p = self.scan_cp
 
-        scan_front_f = 720 - front_side_degree
+        scan_front_f = 719 - front_side_degree
         for x in range(front_side_degree):
             Distance.Front_Focus.append(round(p.ranges[x+scan_front_f], 4))
         
@@ -30,12 +30,14 @@ class PlatypousMain:
         # print("Front Focus: " + str(Distance.Front_Focus))
         # print()
                 
-        scan_front = 720-front_degree
+        scan_front = 719-front_degree
         for x in range(front_degree):
-            Distance.Front.append(round(p.ranges[x+scan_front], 4))
-        
+            if p.ranges[x+scan_front] > p.range_min and p.ranges[x+scan_front] < p.range_max:
+                Distance.Front.append(round(p.ranges[x+scan_front], 4))
+
         for x in range(front_degree):
-            Distance.Front.append(round(p.ranges[x], 4))
+            if p.ranges[x] > p.range_min and p.ranges[x] < p.range_max:
+                Distance.Front.append(round(p.ranges[x], 4))
 
         # print("Front Min: " + str(round(min(Distance.Front), 4)))
         # print("Front: " + str(Distance.Front))
@@ -44,7 +46,8 @@ class PlatypousMain:
 
         scan_front_l = front_degree
         for x in range(front_side_degree*2):
-            Distance.Front_Left.append(round(p.ranges[x+scan_front_l], 4))
+            if p.ranges[x+scan_front_l] > p.range_min and p.ranges[x+scan_front_l] < p.range_max:
+                Distance.Front_Left.append(round(p.ranges[x+scan_front_l], 4))
 
         # print("Front Left Min: " + str(min(Distance.Front_Left)))
         # print("Front Left: " + str(Distance.Front_Left))
@@ -53,7 +56,8 @@ class PlatypousMain:
 
         scan_front_r = scan_front - (front_side_degree *2)
         for x in range(front_side_degree*2):
-            Distance.Front_Right.append(round(p.ranges[x+scan_front_r], 4))
+            if p.ranges[x+scan_front_r] > p.range_min and p.ranges[x+scan_front_r] < p.range_max:
+                Distance.Front_Right.append(round(p.ranges[x+scan_front_r], 4))
 
         # print("Front Right Min: " + str(min(Distance.Front_Right)))
         # print("Front Right: " + str(Distance.Front_Right))
@@ -69,15 +73,18 @@ class PlatypousMain:
 
         scan_back = 360 - (front_degree * 2)
         for x in range(front_degree*2):
-            Distance.Back.append(p.ranges[x+scan_back])
+            if p.ranges[x+scan_back] > p.range_min and p.ranges[x+scan_back] < p.range_max:
+                Distance.Back.append(p.ranges[x+scan_back])
         
         scan_back_r = scan_back + (front_degree * 2)
         for x in range(front_side_degree*2):
-            Distance.Back_Right.append(p.ranges[x+scan_back_r])
+            if p.ranges[x+scan_back_r] > p.range_min and p.ranges[x+scan_back_r] < p.range_max:
+                Distance.Back_Right.append(p.ranges[x+scan_back_r])
 
         scan_back_l = scan_back - (front_side_degree * 2)
         for x in range(front_side_degree*2):
-            Distance.Back_Left.append(p.ranges[x+scan_back_l])
+            if p.ranges[x+scan_back_l] > p.range_min and p.ranges[x+scan_back_l] < p.range_max:
+                Distance.Back_Left.append(p.ranges[x+scan_back_l])
 
 
         PlatypousController.go(self, x_speed, z_angular)
@@ -131,23 +138,23 @@ class PlatypousController:
                         self.twist_pub.publish(vel_msg)
                     elif min(Distance.Back_Right) > 1:
                         print("2")
-                        vel_msg.linear.x = -x_speed
+                        vel_msg.linear.x = -x_speed*0.5
                         vel_msg.angular.z = -z_angular
                         self.twist_pub.publish(vel_msg)
                 elif min(Distance.Back) > 0.5 or min(Distance.Back_Left) > 0.5 or min(Distance.Back_Right) > 0.5:
                     if min(Distance.Back) > 0.5:
                         print("3")
                         vel_msg.angular.z = 0
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         self.twist_pub.publish(vel_msg)
                     elif min(Distance.Back_Right) > 0.5:
                         print("4")
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         vel_msg.angular.z = -z_angular
                         self.twist_pub.publish(vel_msg)
                     elif min(Distance.Back_Left) > 0.5:
                         print("5")
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         vel_msg.angular.z = z_angular
                         self.twist_pub.publish(vel_msg)
             elif (min(Distance.Front_Left) < 1) or (min(Distance.Front_Right) > (min(Distance.Front_Left) + 0.8)):
@@ -164,23 +171,23 @@ class PlatypousController:
                         self.twist_pub.publish(vel_msg)
                     elif(min(Distance.Back_Left) > 1):
                         print("7")
-                        vel_msg.linear.x = -x_speed
+                        vel_msg.linear.x = -x_speed*0.5
                         vel_msg.angular.z = z_angular
                         self.twist_pub.publish(vel_msg)
                 elif min(Distance.Back) > 0.5 or min(Distance.Back_Left) > 0.5 or min(Distance.Back_Right) > 0.5:
                     if min(Distance.Back) > 0.5:
                         print("8")
                         vel_msg.angular.z = 0
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         self.twist_pub.publish(vel_msg)
                     elif min(Distance.Back_Right) > 0.5:
                         print("9")
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         vel_msg.angular.z = -z_angular
                         self.twist_pub.publish(vel_msg)
                     elif min(Distance.Back_Left) > 0.5:
                         print("10")
-                        vel_msg.linear.x = -x_speed*0.6
+                        vel_msg.linear.x = -x_speed*0.4
                         vel_msg.angular.z = z_angular
                         self.twist_pub.publish(vel_msg)
             #Ide egy hátrafelé fordulásos implementálás
