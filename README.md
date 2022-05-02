@@ -3,7 +3,7 @@ PlatypOUs programozása
 
 A telepítési útmutatók megtalálható a PlatypOUs [GitHub](https://github.com/ABC-iRobotics/PlatypOUs-Mobile-Robot-Platform) oldalán.
 
-##Feladat leírása
+## Feladat leírása
 
 1.1. PlatypOUs pályakövetés
 
