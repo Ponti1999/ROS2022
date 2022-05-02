@@ -29,11 +29,11 @@ A Main-ben fel lehet paraméterezni ezeket az adatokat a következőek alapján:
 > front_degree, front_side_degree, side_degree, x_speed, z_angular
 
 Alapból a következő paraméterek azok, amik beváltak nekem: 
--front_degree: 75, 
--front_side_degree: 15
--side_degree: 40
--x_speed: 0.6
--z_angular: 0.45
+- front_degree: 75, 
+- front_side_degree: 15
+- side_degree: 40
+- x_speed: 0.6
+- z_angular: 0.45
 
 Ezek közül a side_degree-t nem használom fel, mert side logikát nem használok.
 A faltól való egyenletes nagyságú távolság tartáshoz vagy pedig a kerék megakadásának
