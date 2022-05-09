@@ -47,7 +47,7 @@ Megvizsgáljuk, hogy jobb vagy baloldalt van e elégséges hely a forduláshoz �
 Ezzel: "min(Distance.Front_Left) > (min(Distance.Front_Right) + 0.8" azt díjazom a program számára, hogy ha jobb elől annyival több a hely akkor tartsa azt az irányt.
 Ezzel a módszerrel azt érem el, hogy ne kacsázzon annyira a robot a 2 fordulási irány közül és azt, hogy ha van egy ajtó akkor ezzel nagyobb valószínűséggel inkább átmegy rajta mintsem kikerüli, mert az ajtón "átnézve" sokkal nagyobb szabad helyet lát a robot számára.
 
-Ezen kívül van még az is, hogy ha nem tud se előre menne is fordulni akkor hátrafelé kell tolatnia.
+Ezen kívül van még az is, hogy ha nem tud se előre menne, se fordulni, akkor hátrafelé kell tolatnia.
 A hátrafelé tolatásnál vizsgálom, hogy van e hely hátul és van e hely abban az irányban hátul, amerre tolatni szeretne a robot.
 Ha van elég hely abban az irányban, amerre tolatni szeretne a robot akkor lassított sebességgel meg is teszi.
 
